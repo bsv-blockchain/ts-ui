@@ -225,11 +225,15 @@ const IdentitySearchField: React.FC<IdentitySearchFieldProps> = ({
       return []
     }
 
-    const uniqueOptions = deduplicate
-      ? identities.filter((identity, index, array) =>
-        array.findIndex(i => i.identityKey === identity.identityKey) === index
-      )
-      : identities
+    let uniqueOptions = identities
+    if (deduplicate) {
+      const seen = new Set<string>()
+      uniqueOptions = identities.filter(identity => {
+        if (seen.has(identity.identityKey)) return false
+        seen.add(identity.identityKey)
+        return true
+      })
+    }
 
     return filterOptions(uniqueOptions, { inputValue })
   }, [identities, deduplicate, filterOptions, inputValue])
