@@ -80,6 +80,7 @@ export const useIdentitySearch = ({
   // Refs for managing async operations
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastRequestIdRef = useRef<number>(0)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const justSelectedRef = useRef<boolean>(false) // Prevent search after selection
   const shouldClearResultsRef = useRef<boolean>(false) // Track explicit clear actions (X button)
 
@@ -100,9 +101,16 @@ export const useIdentitySearch = ({
         return
       }
 
+      // Abort any previous in-flight request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+
       setIsLoading(true)
 
-      const searchResults = await fetchIdentities(query, wallet, options, originator)
+      const searchResults = await fetchIdentities(query, wallet, options, originator, controller.signal)
 
       // Verify this is still the latest request before updating state (prevents race conditions)
       if (requestId === lastRequestIdRef.current) {
@@ -112,10 +120,11 @@ export const useIdentitySearch = ({
         setIsLoading(false)
       }
     } catch (error: unknown) {
+      // Silently ignore aborted requests
+      if (error instanceof DOMException && error.name === 'AbortError') return
       // Only handle error if this is still the latest request
       if (requestId === lastRequestIdRef.current) {
         console.error('Identity search failed:', error)
-        console.error('Search params:', { query, wallet: !!wallet, options, originator })
         setIdentities([])
         setIsLoading(false)
       }
@@ -168,10 +177,10 @@ export const useIdentitySearch = ({
     // Show loading state immediately for non-cached searches
     setIsLoading(true)
 
-    // Debounce the search - wait 300ms after user stops typing
+    // Debounce the search - wait 400ms after user stops typing
     debounceTimeoutRef.current = setTimeout(() => {
       performSearch(inputValue.trim(), requestId)
-    }, 300)
+    }, 400)
 
     // Cleanup function
     return () => {
@@ -188,6 +197,7 @@ export const useIdentitySearch = ({
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current)
       }
+      abortControllerRef.current?.abort()
     }
   }, [])
 

@@ -14,38 +14,39 @@ const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 const MAX_CACHE_ENTRIES = 100; // Prevent unbounded growth
 
 class IdentityCache {
-  private getCache(): Map<string, { identity: DisplayableIdentity; timestamp: number }> {
+  private cache: Map<string, { identity: DisplayableIdentity; timestamp: number }>;
+
+  constructor() {
+    // Hydrate once from sessionStorage on init
+    this.cache = new Map();
     try {
       const stored = sessionStorage.getItem(CACHE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return new Map(Object.entries(parsed));
+        for (const [key, value] of Object.entries(parsed)) {
+          this.cache.set(key, value as { identity: DisplayableIdentity; timestamp: number });
+        }
       }
     } catch (e) {
       console.warn('Failed to load identity cache from sessionStorage:', e);
     }
-    return new Map();
   }
 
-  private saveCache(cache: Map<string, { identity: DisplayableIdentity; timestamp: number }>): void {
+  private persist(): void {
     try {
-      const obj = Object.fromEntries(cache);
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify(obj));
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(Object.fromEntries(this.cache)));
     } catch (e) {
       console.warn('Failed to save identity cache to sessionStorage:', e);
     }
   }
 
   get(identityKey: string): DisplayableIdentity | null {
-    const cache = this.getCache();
-    const entry = cache.get(identityKey);
-
+    const entry = this.cache.get(identityKey);
     if (!entry) return null;
 
-    // Check if expired
     if (Date.now() - entry.timestamp > CACHE_EXPIRY) {
-      cache.delete(identityKey);
-      this.saveCache(cache);
+      this.cache.delete(identityKey);
+      this.persist();
       return null;
     }
 
@@ -53,25 +54,16 @@ class IdentityCache {
   }
 
   set(identityKey: string, identity: DisplayableIdentity): void {
-    const cache = this.getCache();
-
     // Simple LRU: remove oldest entries if cache is full
-    if (cache.size >= MAX_CACHE_ENTRIES) {
-      const firstKey = cache.keys().next().value;
+    if (this.cache.size >= MAX_CACHE_ENTRIES) {
+      const firstKey = this.cache.keys().next().value;
       if (firstKey) {
-        cache.delete(firstKey);
+        this.cache.delete(firstKey);
       }
     }
 
-    cache.set(identityKey, {
-      identity,
-      timestamp: Date.now()
-    });
-    this.saveCache(cache);
-  }
-
-  size(): number {
-    return this.getCache().size;
+    this.cache.set(identityKey, { identity, timestamp: Date.now() });
+    this.persist();
   }
 }
 
