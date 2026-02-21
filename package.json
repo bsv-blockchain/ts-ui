@@ -1,6 +1,6 @@
 {
   "name": "@bsv/uhrp-react",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "UHRP-enabled React components for images, video, and audio",
   "main": "dist/index.js",
   "module": "dist/index.js",
