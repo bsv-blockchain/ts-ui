@@ -26,18 +26,70 @@ const DEFAULT_LOOKUP_SERVICE = 'ls_apps'
  * AppCatalog
  * ────────────────────────────────────────────────────────── */
 export class AppCatalog {
+  private readonly keyID: string
   private readonly overlayTopic: string
   private readonly overlayService: string
   private readonly wallet: WalletInterface
   private readonly networkPreset: "mainnet" | "testnet" | "local" | undefined
   private readonly acceptDelayedBroadcast: boolean
+  private cachedNetworkPromise: Promise<"mainnet" | "testnet" | "local"> | undefined
+  private cachedIdentityKeyPromise: Promise<string> | undefined
+  private resolver: LookupResolver | undefined
+  private broadcaster: TopicBroadcaster | undefined
 
   constructor(opts: AppCatalogOptions) {
+    this.keyID = opts.keyID ?? DEFAULT_KEY_ID
     this.overlayTopic = opts.overlayTopic ?? DEFAULT_OVERLAY_TOPIC
     this.overlayService = opts.overlayService ?? DEFAULT_LOOKUP_SERVICE
     this.wallet = opts.wallet ?? new WalletClient()
     this.networkPreset = opts.networkPreset
     this.acceptDelayedBroadcast = opts.acceptDelayedBroadcast ?? false
+  }
+
+  private async getNetwork(wallet: WalletInterface = this.wallet): Promise<"mainnet" | "testnet" | "local"> {
+    if (this.networkPreset) return this.networkPreset
+
+    if (wallet !== this.wallet) {
+      return (await wallet.getNetwork({})).network
+    }
+
+    if (!this.cachedNetworkPromise) {
+      this.cachedNetworkPromise = this.wallet.getNetwork({}).then(({ network }) => network)
+    }
+    return this.cachedNetworkPromise
+  }
+
+  private async getIdentityKey(wallet: WalletInterface = this.wallet): Promise<string> {
+    if (wallet !== this.wallet) {
+      return (await wallet.getPublicKey({ identityKey: true })).publicKey
+    }
+
+    if (!this.cachedIdentityKeyPromise) {
+      this.cachedIdentityKeyPromise = this.wallet
+        .getPublicKey({ identityKey: true })
+        .then(({ publicKey }) => publicKey)
+    }
+    return this.cachedIdentityKeyPromise
+  }
+
+  private async getBroadcaster(): Promise<TopicBroadcaster> {
+    if (!this.broadcaster) {
+      this.broadcaster = new TopicBroadcaster([this.overlayTopic], {
+        networkPreset: await this.getNetwork()
+      })
+    }
+    return this.broadcaster
+  }
+
+  private async getResolver(wallet: WalletInterface): Promise<LookupResolver> {
+    if (wallet !== this.wallet) {
+      return new LookupResolver({ networkPreset: await this.getNetwork(wallet) })
+    }
+
+    if (!this.resolver) {
+      this.resolver = new LookupResolver({ networkPreset: await this.getNetwork() })
+    }
+    return this.resolver
   }
 
   /* ──────────────────────────────  Publish  ───────────────────────────── */
@@ -50,7 +102,7 @@ export class AppCatalog {
     opts: { wallet?: WalletInterface } = {}
   ): Promise<Transaction | BroadcastResponse | BroadcastFailure> {
     const wallet = opts.wallet ?? this.wallet
-    metadata.publisher = (await wallet.getPublicKey({ identityKey: true })).publicKey
+    metadata.publisher = await this.getIdentityKey(wallet)
 
     // --- 1. Encode metadata as UTF‑8 bytes --------------------------------
     const jsonPayload = JSON.stringify(metadata)
@@ -60,7 +112,7 @@ export class AppCatalog {
     const lockingScript = await new PushDrop(wallet).lock(
       [payloadBytes],
       PROTOCOL_ID,
-      DEFAULT_KEY_ID,
+      this.keyID,
       'anyone',
       true
     )
@@ -83,9 +135,7 @@ export class AppCatalog {
     const transaction = Transaction.fromAtomicBEEF(tx)
 
     // --- 4. Broadcast through overlay -----------------------------------
-    const broadcaster = new TopicBroadcaster([this.overlayTopic], {
-      networkPreset: this.networkPreset ?? (await this.wallet.getNetwork({})).network
-    })
+    const broadcaster = await this.getBroadcaster()
     return broadcaster.broadcast(transaction)
   }
 
@@ -109,7 +159,7 @@ export class AppCatalog {
     const newLockingScript = await new PushDrop(this.wallet).lock(
       [payloadBytes],
       PROTOCOL_ID,
-      DEFAULT_KEY_ID,
+      this.keyID,
       'anyone',
       true
     )
@@ -141,7 +191,7 @@ export class AppCatalog {
     if (!signableTransaction) throw new Error('Unable to create update transaction')
 
     // --- 4. Produce unlocking script ------------------------------------
-    const unlocker = pushdrop.unlock(PROTOCOL_ID, DEFAULT_KEY_ID, 'anyone')
+    const unlocker = pushdrop.unlock(PROTOCOL_ID, this.keyID, 'anyone')
     const unlockingScript = await unlocker.sign(
       Transaction.fromBEEF(signableTransaction.tx),
       0
@@ -158,9 +208,7 @@ export class AppCatalog {
     const transaction = Transaction.fromAtomicBEEF(tx)
 
     // --- 6. Broadcast through overlay -----------------------------------
-    const broadcaster = new TopicBroadcaster([this.overlayTopic], {
-      networkPreset: this.networkPreset ?? (await this.wallet.getNetwork({})).network
-    })
+    const broadcaster = await this.getBroadcaster()
     return await broadcaster.broadcast(transaction)
   }
 
@@ -189,7 +237,7 @@ export class AppCatalog {
     })
     if (!signableTransaction) throw new Error('Unable to redeem app token')
 
-    const unlocker = new PushDrop(this.wallet).unlock(PROTOCOL_ID, DEFAULT_KEY_ID, 'anyone')
+    const unlocker = new PushDrop(this.wallet).unlock(PROTOCOL_ID, this.keyID, 'anyone')
     const unlockingScript = await unlocker.sign(Transaction.fromBEEF(signableTransaction.tx), 0)
 
     const { tx } = await this.wallet.signAction({
@@ -201,9 +249,7 @@ export class AppCatalog {
     const transaction = Transaction.fromAtomicBEEF(tx)
 
     // Broadcast to overlay
-    const broadcaster = new TopicBroadcaster([this.overlayTopic], {
-      networkPreset: this.networkPreset ?? (await this.wallet.getNetwork({})).network
-    })
+    const broadcaster = await this.getBroadcaster()
     return await broadcaster.broadcast(transaction)
   }
 
@@ -244,11 +290,10 @@ export class AppCatalog {
     if (query.sortOrder) lookupQuery.sortOrder = query.sortOrder
     if (query.startDate) lookupQuery.startDate = `${query.startDate}T00:00:00.000Z`
     if (query.endDate) lookupQuery.endDate = `${query.endDate}T23:59:59.999Z`
+    if (opts.includeBeef === false) lookupQuery.includeBeef = false
 
     // --- 2. Resolve -----------------------------------------------------
-    const resolver =
-      opts.resolver ??
-      new LookupResolver({ networkPreset: this.networkPreset ?? (await wallet.getNetwork({})).network })
+    const resolver = opts.resolver ?? (await this.getResolver(wallet))
 
     const answer = await resolver.query({ service: this.overlayService, query: lookupQuery })
 
@@ -259,25 +304,35 @@ export class AppCatalog {
   /* ───────────────────────── Helper: parse lookup ─────────────────────── */
   private parseLookupAnswer(ans: LookupAnswer, includeBeef: boolean): PublishedApp[] {
     if (ans.type !== 'output-list' || !ans.outputs.length) return []
+    const apps: PublishedApp[] = []
 
-    return ans.outputs.map(o => {
-      const tx = Transaction.fromBEEF(o.beef)
-      const out = tx.outputs[o.outputIndex]
-      const decoded = PushDrop.decode(out.lockingScript)
+    for (const o of ans.outputs) {
+      try {
+        const tx = Transaction.fromBEEF(o.beef)
+        const out = tx.outputs[o.outputIndex]
+        if (!out) continue
 
-      const jsonString = Utils.toUTF8(decoded.fields[0] as number[])
-      const metadata: PublishedAppMetadata = JSON.parse(jsonString)
+        const decoded = PushDrop.decode(out.lockingScript)
+        if (!decoded.fields.length) continue
 
-      return {
-        metadata,
-        token: {
-          txid: tx.id('hex'),
-          outputIndex: o.outputIndex,
-          lockingScript: out.lockingScript.toHex(),
-          satoshis: out.satoshis ?? 0,
-          ...(includeBeef ? { beef: o.beef } : {})
-        }
+        const jsonString = Utils.toUTF8(decoded.fields[0] as number[])
+        const metadata: PublishedAppMetadata = JSON.parse(jsonString)
+
+        apps.push({
+          metadata,
+          token: {
+            txid: tx.id('hex'),
+            outputIndex: o.outputIndex,
+            lockingScript: out.lockingScript.toHex(),
+            satoshis: out.satoshis ?? 0,
+            ...(includeBeef ? { beef: o.beef } : {})
+          }
+        })
+      } catch {
+        // Skip malformed records instead of failing the whole lookup.
       }
-    })
+    }
+
+    return apps
   }
 }
