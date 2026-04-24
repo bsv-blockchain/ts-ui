@@ -1,5 +1,5 @@
 {
-  "name": "peerpay",
+  "name": "@bsv/peerpay-react",
   "private": true,
   "version": "1.0.0",
   "description": "Peerpay project using CARS and LARS",

@@ -18,6 +18,7 @@ BSV TypeScript UI monorepo — React components and web apps for the BSV stack.
 | [registrant](packages/registrant) | `packages/registrant` | `@bsv/registrant` *(private app)* | App |
 | [btms-frontend](packages/btms-frontend) | `packages/btms-frontend` | `@bsv/btms-frontend` *(private app)* | App |
 | [btms-permission-module-ui](packages/btms-permission-module-ui) | `packages/btms-permission-module-ui` | [@bsv/btms-permission-module-ui](https://www.npmjs.com/package/@bsv/btms-permission-module-ui) | Library |
+| [peerpay-react](packages/peerpay-react) | `packages/peerpay-react` | `@bsv/peerpay-react` *(private app)* | App |
 
 ---
 
