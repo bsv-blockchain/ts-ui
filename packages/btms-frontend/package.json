@@ -1,5 +1,5 @@
 {
-  "name": "btms-ui-react",
+  "name": "@bsv/btms-frontend",
   "description": "BTMS UI.",
   "version": "0.0.1",
   "private": true,
