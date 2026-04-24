@@ -1,5 +1,5 @@
 {
-  "name": "metanet-apps",
+  "name": "@bsv/metanet-apps",
   "version": "1.0.10",
   "description": "Publish and find Metanet apps with ease",
   "type": "module",
