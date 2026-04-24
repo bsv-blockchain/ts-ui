@@ -1,0 +1,22 @@
+{
+  "name": "peerpay",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Peerpay project using CARS and LARS",
+  "dependencies": {
+    "@bsv/cars-cli": "^1.2.9",
+    "@bsv/lars": "^1.5.8"
+  },
+  "scripts": {
+    "lars": "lars",
+    "cars": "cars",
+    "lars:config": "lars config",
+    "start": "lars start",
+    "build": "cars build 1",
+    "deploy": "cars deploy now 1"
+  },
+  "devDependencies": {
+    "sass": "^1.89.2",
+    "sass-embedded": "^1.89.2"
+  }
+}
