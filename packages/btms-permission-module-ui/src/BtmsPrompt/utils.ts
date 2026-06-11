@@ -18,12 +18,28 @@ export const parseTokenMessage = (message: string): BTMSPromptInfo | null => {
   const lines = message.split('\n')
   const firstLine = lines[0] || ''
 
-  const spendMatch = firstLine.match(/Spend (\d+) (.+?) token/)
-  const amount = spendMatch?.[1] ? parseInt(spendMatch[1], 10) : 0
-  const tokenName = spendMatch?.[2] || 'Unknown Token'
+  // Parsed without backtracking-prone regexes: the message comes from the
+  // requesting app, so parsing must stay linear in its length (js/polynomial-redos)
+  let amount = 0
+  let tokenName = 'Unknown Token'
+  const spendMatch = firstLine.match(/^Spend (\d+) /)
+  if (spendMatch != null) {
+    amount = parseInt(spendMatch[1], 10)
+    const nameStart = spendMatch[0].length
+    const tokenIdx = firstLine.indexOf(' token', nameStart)
+    if (tokenIdx !== -1) {
+      tokenName = firstLine.slice(nameStart, tokenIdx) || 'Unknown Token'
+    }
+  }
 
-  const assetIdMatch = message.match(/Asset ID: (.+?)(?:\n|$)/)
-  const assetId = assetIdMatch?.[1] || ''
+  const assetIdPrefix = 'Asset ID: '
+  const assetIdStart = message.indexOf(assetIdPrefix)
+  let assetId = ''
+  if (assetIdStart !== -1) {
+    const valueStart = assetIdStart + assetIdPrefix.length
+    const lineEnd = message.indexOf('\n', valueStart)
+    assetId = lineEnd === -1 ? message.slice(valueStart) : message.slice(valueStart, lineEnd)
+  }
 
   return {
     type: 'btms_spend',
