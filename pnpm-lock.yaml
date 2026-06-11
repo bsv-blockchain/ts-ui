@@ -546,7 +546,7 @@ importers:
   packages/registrant/frontend:
     dependencies:
       '@bsv/sdk':
-        specifier: '>=2.0.0'
+        specifier: ^2.0.4
         version: 2.0.14
       '@bsv/wallet-toolbox-client':
         specifier: ^1.6.43

@@ -37,7 +37,7 @@
     "use-async-effect": "^2.2.7"
   },
   "peerDependencies": {
-    "@bsv/sdk": "^1.7.6",
+    "@bsv/sdk": "^1.7.6 || ^2.0.0",
     "@bsv/wallet-toolbox-client": "^1.6.23",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
