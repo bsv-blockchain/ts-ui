@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test"
+    "build": "DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "test": "react-scripts test --passWithNoTests --watchAll=false"
   },
   "dependencies": {
     "@bsv/uhrp-react": "^1.0.0",

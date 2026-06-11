@@ -1,3 +1,4 @@
 packages:
-  - 'packages/**'
-  - 'apps/**'
+  - 'packages/*'
+  - 'packages/*/frontend'
+  - 'packages/uhrp-react/example'
