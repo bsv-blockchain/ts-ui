@@ -2,6 +2,11 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+
+# pnpm is the only package manager here; npm/yarn lockfiles are subtree-merge
+# leftovers and each one multiplies Dependabot alerts
+package-lock.json
+yarn.lock
 .env
 .env.*
 !.env.example
