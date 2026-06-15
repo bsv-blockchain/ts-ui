@@ -16,7 +16,7 @@
     "build:cars": "cars build 1"
   },
   "devDependencies": {
-    "sass": "^1.89.2",
+    "sass": "^1.101.0",
     "sass-embedded": "^1.89.2"
   }
 }
