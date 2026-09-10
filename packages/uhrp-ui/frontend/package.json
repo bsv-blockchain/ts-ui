@@ -4,7 +4,7 @@
   "private": true,
   "license": "Open BSV License",
   "dependencies": {
-    "@bsv/sdk": "^2.0.4",
+    "@bsv/sdk": "^2.5.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^5.11.16",
