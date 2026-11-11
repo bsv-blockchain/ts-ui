@@ -13,18 +13,21 @@
     }
   },
   "files": [
+    "LICENSE",
+    "NOTICE",
     "dist/**/*"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/bsv-blockchain/uhrp-react.git"
   },
-  "author": "BSV Blockchain Association",
-  "license": "Open BSV License",
+  "author": "BSV Association",
+  "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['LICENSE','NOTICE'])fs.copyFileSync('../../'+f,f)\"",
     "clean": "rm -rf dist",
     "build": "tsc",
     "postbuild": "echo 'Build complete!'"

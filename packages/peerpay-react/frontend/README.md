@@ -233,6 +233,6 @@ Open a PR with your improvements or bug fixes.
 We welcome bug reports, feature requests, and community contributions!
 
 ## License
-The code in this repository is licensed under the Open BSV License. Please see LICENSE for more details.
+The code in this repository is licensed under the Apache License 2.0. Please see LICENSE for more details.
 
 Happy paying! Build interactive and decentralized payment applications using the BSV blockchain with PeerPay-React.

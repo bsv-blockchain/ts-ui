@@ -122,4 +122,4 @@ The frontend connects to:
 
 ## License
 
-Open BSV License
+Apache License 2.0

@@ -3,16 +3,19 @@
   "version": "1.0.1",
   "description": "Currency amount display components",
   "author": "Peer-to-peer Privacy Systems Research, LLC",
-  "license": "Open BSV License",
+  "license": "Apache-2.0",
   "main": "./out/src/index.js",
   "types": "./out/src/index.d.ts",
   "files": [
+    "LICENSE",
+    "NOTICE",
     "out"
   ],
   "directories": {
     "test": "tests"
   },
   "scripts": {
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['LICENSE','NOTICE'])fs.copyFileSync('../../'+f,f)\"",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "build": "tsc --build"
