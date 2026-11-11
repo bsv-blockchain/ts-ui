@@ -2,7 +2,7 @@
   "name": "uhrp-example-ui",
   "version": "0.2.45",
   "private": true,
-  "license": "Open BSV License",
+  "license": "Apache-2.0",
   "dependencies": {
     "@bsv/sdk": "^2.0.4",
     "@emotion/react": "^11.14.0",

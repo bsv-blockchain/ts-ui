@@ -161,4 +161,4 @@ For explicit behavior, prefer string values with currency codes, for example:
 
 ## License
 
-Open BSV License.
+Apache License 2.0.

@@ -14,3 +14,17 @@ coverage/
 .nyc_output/
 *.log
 .DS_Store
+
+# LICENSE / NOTICE copied into nested npm packages by their prepack script
+/packages/amountinator-react/LICENSE
+/packages/amountinator-react/NOTICE
+/packages/brc100-ui-react/LICENSE
+/packages/brc100-ui-react/NOTICE
+/packages/btms-permission-module-ui/LICENSE
+/packages/btms-permission-module-ui/NOTICE
+/packages/identity-react/LICENSE
+/packages/identity-react/NOTICE
+/packages/metanet-apps/LICENSE
+/packages/metanet-apps/NOTICE
+/packages/uhrp-react/LICENSE
+/packages/uhrp-react/NOTICE

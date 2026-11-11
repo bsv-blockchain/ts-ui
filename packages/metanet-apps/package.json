@@ -7,12 +7,14 @@
   "module": "dist/esm/mod.js",
   "types": "dist/types/mod.d.ts",
   "files": [
+    "NOTICE",
     "dist",
     "src",
     "mod.ts",
-    "LICENSE.txt"
+    "LICENSE"
   ],
   "scripts": {
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['LICENSE','NOTICE'])fs.copyFileSync('../../'+f,f)\"",
     "test": "npm run build && jest --passWithNoTests",
     "test:watch": "npm run build && jest --watch",
     "test:coverage": "npm run build && jest --coverage",
@@ -26,7 +28,7 @@
     "doc": "ts2md"
   },
   "author": "Peer-to-peer Privacy Systems Research, LLC",
-  "license": "Open BSV License",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@jest/globals": "^29.7.0",
