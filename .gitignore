@@ -18,13 +18,19 @@ coverage/
 # LICENSE / NOTICE copied into nested npm packages by their prepack script
 /packages/amountinator-react/LICENSE
 /packages/amountinator-react/NOTICE
+/packages/amountinator-react/PATENTS
 /packages/brc100-ui-react/LICENSE
 /packages/brc100-ui-react/NOTICE
+/packages/brc100-ui-react/PATENTS
 /packages/btms-permission-module-ui/LICENSE
 /packages/btms-permission-module-ui/NOTICE
+/packages/btms-permission-module-ui/PATENTS
 /packages/identity-react/LICENSE
 /packages/identity-react/NOTICE
+/packages/identity-react/PATENTS
 /packages/metanet-apps/LICENSE
 /packages/metanet-apps/NOTICE
+/packages/metanet-apps/PATENTS
 /packages/uhrp-react/LICENSE
 /packages/uhrp-react/NOTICE
+/packages/uhrp-react/PATENTS

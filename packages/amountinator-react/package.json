@@ -8,6 +8,7 @@
   "types": "./out/src/index.d.ts",
   "files": [
     "LICENSE",
+    "PATENTS",
     "NOTICE",
     "out"
   ],
@@ -15,7 +16,7 @@
     "test": "tests"
   },
   "scripts": {
-    "prepack": "node -e \"const fs=require('fs');for(const f of ['LICENSE','NOTICE'])fs.copyFileSync('../../'+f,f)\"",
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['LICENSE','NOTICE','PATENTS'])fs.copyFileSync('../../'+f,f)\"",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "build": "tsc --build"
