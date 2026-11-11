@@ -17,6 +17,7 @@
   "types": "dist/types/index.d.ts",
   "files": [
     "LICENSE",
+    "PATENTS",
     "NOTICE",
     "dist/**/*"
   ],
@@ -57,7 +58,7 @@
     "react-toastify": "^11.0.3"
   },
   "scripts": {
-    "prepack": "node -e \"const fs=require('fs');for(const f of ['LICENSE','NOTICE'])fs.copyFileSync('../../'+f,f)\"",
+    "prepack": "node -e \"const fs=require('fs');for(const f of ['LICENSE','NOTICE','PATENTS'])fs.copyFileSync('../../'+f,f)\"",
     "build": "tsc",
     "lint:ci": "echo 'No linting'",
     "test": "echo 'No tests'"
