@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@bsv/message-box-client": "^2.0.2",
-    "@bsv/sdk": "^2.0.4",
+    "@bsv/sdk": "^2.5.0",
     "@bsv/wallet-toolbox-client": "^2.0.19",
     "@emotion/react": "^11.10.8",
     "@emotion/styled": "^11.10.8",
